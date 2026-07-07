@@ -12,29 +12,24 @@ class OllamaClient:
         self.model = settings.default_model
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
-    def generate(self,prompt:str) -> str:
+    def generate(self, messages: list[dict]) -> str:
         try:
             app_logger.info(f"Sending request to {self.model}")
+
             response = self.client.chat(
                 model=self.model,
-                messages=[
-                    {
-                        "role" : "user",
-                        "content" : prompt,
-                    }
-                ],
+                messages=messages,
             )
 
             content = response["message"]["content"]
 
-            app_logger.success("Response received successfully")
+            app_logger.success("Response received")
 
             return content
 
         except Exception as e:
             app_logger.error(f"LLM Error: {e}")
             raise
-
         
 
 ollama_client = OllamaClient()

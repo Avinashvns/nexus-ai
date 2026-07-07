@@ -17,13 +17,17 @@ class LLMRouter:
     def generate(self, prompt: str) -> str:
         system_prompt = prompt_manager.load("system.txt")
 
-        final_prompt = f"""
-            {system_prompt}
-
-            User:
-            {prompt}
-            """
+        messages = [
+            {
+                "role": "system",
+                "content": system_prompt,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ]
         client = self.clients[self.provider]
-        return client.generate(final_prompt)
+        return client.generate(messages)
 
 llm_router = LLMRouter()
