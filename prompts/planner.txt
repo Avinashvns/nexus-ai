@@ -25,3 +25,13 @@ Format:
 
 Do not return markdown.
 Do not return explanations.
+
+For document-based tasks, ALWAYS create this execution order:
+
+1. RetrievalAgent
+2. ReasoningAgent
+3. CriticAgent
+4. WriterAgent
+
+Never place WriterAgent before CriticAgent.
+Never skip RetrievalAgent for document-based tasks.
