@@ -5,6 +5,8 @@ from agents.executor import agent_executor
 from agents.planner import planner_agent
 from core.logger import app_logger
 from models import AgentRequest, AgentResponse, AgentState
+from observability.metrics import ExecutionMetrics
+from observability.tracing import generate_workflow_id
 
 
 class WorkflowEngine:
@@ -12,7 +14,12 @@ class WorkflowEngine:
         self.max_retries = max_retries
 
     def run(self, task: str, session_id: str = "default") -> AgentResponse:
+        workflow_id = generate_workflow_id()
         app_logger.info(f"Starting workflow: {task}")
+
+        metrics = ExecutionMetrics()
+        metrics.start_workflow()
+
         memory_context = memory_manager.build_context(
             session_id=session_id,
         )
@@ -57,7 +64,9 @@ class WorkflowEngine:
 
             state.current_agent = agent_name
 
-            app_logger.info(f"Workflow executing: {agent_name}")
+            app_logger.info(f"[{workflow_id}] Executing: {agent_name}")
+
+            metrics.start_agent(agent_name)
 
             request = AgentRequest(
                 task=step["task"],
@@ -67,6 +76,11 @@ class WorkflowEngine:
             response, attempts = self._execute_with_retry(
                 agent_name=agent_name,
                 request=request,
+            )
+
+            metrics.end_agent(
+                agent_name=agent_name,
+                success=response.success,
             )
 
             history_item = {
@@ -81,16 +95,20 @@ class WorkflowEngine:
             if not response.success:
                 step["status"] = "failed"
 
-                app_logger.error(f"Workflow failed at: {agent_name}")
+                app_logger.error(f"[{workflow_id}] Workflow failed at: {agent_name}")
+
+                workflow_metrics = metrics.finish_workflow(success=False)
 
                 return AgentResponse(
                     success=False,
                     output=None,
                     metadata={
+                        "workflow_id": workflow_id,
                         "failed_agent": agent_name,
                         "failed_step": step["id"],
                         "plan": plan,
                         "execution_history": execution_history,
+                        "metrics": workflow_metrics,
                         "error": response.metadata.get("error"),
                     },
                 )
@@ -105,6 +123,8 @@ class WorkflowEngine:
 
         state.completed = True
 
+        workflow_metrics = metrics.finish_workflow(success=True)
+
         final_output = state.context.get(
             "final_output",
             state.context,
@@ -115,15 +135,17 @@ class WorkflowEngine:
             content=final_output,
         )
 
-        app_logger.success("Workflow completed successfully")
+        app_logger.success(f"[{workflow_id}] Workflow completed successfully")
 
         return AgentResponse(
             success=True,
             output=final_output,
             metadata={
+                "workflow_id": workflow_id,
                 "workflow_completed": state.completed,
                 "plan": plan,
                 "execution_history": execution_history,
+                "metrics": workflow_metrics,
             },
         )
 
