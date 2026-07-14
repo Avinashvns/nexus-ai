@@ -23,3 +23,5 @@ tenacity
 orjson
 
 ddgs
+
+python-multipart
