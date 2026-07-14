@@ -1,4 +1,5 @@
 from typing import Any
+from memory.manager import memory_manager
 
 from agents.executor import agent_executor
 from agents.planner import planner_agent
@@ -10,14 +11,34 @@ class WorkflowEngine:
     def __init__(self, max_retries: int = 2):
         self.max_retries = max_retries
 
-    def run(self, task: str) -> AgentResponse:
+    def run(self, task: str, session_id: str = "default") -> AgentResponse:
         app_logger.info(f"Starting workflow: {task}")
+        memory_context = memory_manager.build_context(
+            session_id=session_id,
+        )
 
-        state = AgentState(task=task)
+        memory_manager.add_user_message(
+            session_id=session_id,
+            content=task,
+        )
+
+        state = AgentState(
+            task=task,
+            context={
+                "conversation_memory": memory_context,
+            },
+        )
 
         execution_history: list[dict[str, Any]] = []
 
-        plan_response = planner_agent.run(AgentRequest(task=task))
+        plan_response = planner_agent.run(
+            AgentRequest(
+                task=task,
+                context={
+                    "conversation_memory": memory_context,
+                },
+            )
+        )
 
         if not plan_response.success:
             return AgentResponse(
@@ -84,14 +105,21 @@ class WorkflowEngine:
 
         state.completed = True
 
+        final_output = state.context.get(
+            "final_output",
+            state.context,
+        )
+
+        memory_manager.add_assistant_message(
+            session_id=session_id,
+            content=final_output,
+        )
+
         app_logger.success("Workflow completed successfully")
 
         return AgentResponse(
             success=True,
-            output=state.context.get(
-                "final_output",
-                state.context,
-            ),
+            output=final_output,
             metadata={
                 "workflow_completed": state.completed,
                 "plan": plan,
@@ -100,9 +128,9 @@ class WorkflowEngine:
         )
 
     def _normalize_plan(
-    self,
-    plan: list[dict],
-) -> list[dict]:
+        self,
+        plan: list[dict],
+    ) -> list[dict]:
         agent_order = {
             "SearchAgent": 1,
             "RetrievalAgent": 2,

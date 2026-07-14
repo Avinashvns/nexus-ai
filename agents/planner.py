@@ -55,7 +55,7 @@ class PlannerAgent(BaseAgent):
                 return False
 
         return True
-    
+
     def _repair_plan(self, invalid_response: str) -> Any:
         repair_prompt = f"""
             The following execution plan is invalid.
@@ -92,12 +92,20 @@ class PlannerAgent(BaseAgent):
         try:
             planner_prompt = prompt_manager.load("planner.txt")
 
+            conversation_memory = request.context.get(
+                "conversation_memory",
+                "",
+            )
+
             prompt = f"""
                 {planner_prompt}
 
+                Conversation Memory:
+                {conversation_memory or "No previous conversation."}
+
                 User Task:
                 {request.task}
-            """
+                """
 
             response = llm_router.generate(prompt)
 
@@ -138,5 +146,6 @@ class PlannerAgent(BaseAgent):
                     "error": str(error),
                 },
             )
+
 
 planner_agent = PlannerAgent()

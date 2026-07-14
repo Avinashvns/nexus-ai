@@ -27,15 +27,23 @@ class WriterAgent(BaseAgent):
                 "",
             )
 
+            conversation_memory = request.context.get(
+                "conversation_memory",
+                "",
+            )
+
             prompt = f"""
-{writer_prompt}
+                {writer_prompt}
 
-User Task:
-{request.task}
+                User Task:
+                {request.task}
 
-Analysis:
-{analysis}
-"""
+                Conversation Memory:
+                {conversation_memory or "No previous conversation."}
+
+                Analysis:
+                {analysis}
+                """
 
             output = llm_router.generate(prompt)
 

@@ -27,15 +27,23 @@ class ReasoningAgent(BaseAgent):
                 [],
             )
 
+            conversation_memory = request.context.get(
+                "conversation_memory",
+                "",
+            )
+
             prompt = f"""
-{reasoning_prompt}
+                {reasoning_prompt}
 
-User Task:
-{request.task}
+                User Task:
+                {request.task}
 
-Retrieved Context:
-{context}
-"""
+                Conversation Memory:
+                {conversation_memory or "No previous conversation."}
+
+                Retrieved Context:
+                {context or "No retrieved document context."}
+                """
 
             output = llm_router.generate(prompt)
 
