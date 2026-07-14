@@ -32,6 +32,11 @@ class ReasoningAgent(BaseAgent):
                 "",
             )
 
+            search_results = request.context.get(
+                "search_results",
+                [],
+            )
+
             prompt = f"""
                 {reasoning_prompt}
 
@@ -40,6 +45,9 @@ class ReasoningAgent(BaseAgent):
 
                 Conversation Memory:
                 {conversation_memory or "No previous conversation."}
+
+                Search Results:
+                {search_results or "No web search results."}
 
                 Retrieved Context:
                 {context or "No retrieved document context."}

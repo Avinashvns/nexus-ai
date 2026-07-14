@@ -21,3 +21,5 @@ rich
 tenacity
 
 orjson
+
+ddgs

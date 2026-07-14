@@ -179,6 +179,7 @@ class WorkflowEngine:
         output: Any,
     ) -> None:
         context_keys = {
+            "SearchAgent": "search_results",
             "RetrievalAgent": "retrieved_context",
             "ReasoningAgent": "reasoning_output",
             "CriticAgent": "critic_output",

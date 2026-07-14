@@ -16,6 +16,13 @@ For document-based tasks, use this execution order:
 3. CriticAgent
 4. WriterAgent
 
+For current, latest, recent, internet, or web-based tasks, use:
+
+1. SearchAgent
+2. ReasoningAgent
+3. CriticAgent
+4. WriterAgent
+
 For conversation-memory questions such as:
 - What did I ask before?
 - What did we discuss?

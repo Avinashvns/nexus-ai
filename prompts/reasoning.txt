@@ -4,13 +4,15 @@ Analyze the user task using the available context.
 
 Context may include:
 - Conversation memory
+- Web search results
 - Retrieved document context
 
 Rules:
 - Use conversation memory for previous-message questions.
-- Use retrieved context for document questions.
+- Use web search results for current or internet-based questions.
+- Use retrieved context for document-based questions.
 - Prefer direct evidence from the provided context.
 - Do not invent unsupported facts.
-- Clearly distinguish conversation history from document information.
+- Clearly distinguish conversation history, web information, and document information.
 
 Return a concise structured analysis.
