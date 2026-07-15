@@ -1,10 +1,15 @@
+from database.init_db import init_database
 from memory.store import MemoryStore
 
 
 def main():
+    init_database()
+
     memory = MemoryStore()
 
-    session_id = "test-session"
+    session_id = "persistent-memory-test"
+
+    memory.clear(session_id)
 
     memory.add(
         session_id=session_id,
@@ -24,7 +29,15 @@ def main():
 
     assert messages[0]["role"] == "user"
 
-    assert messages[1]["role"] == "assistant"
+    assert (
+        messages[0]["content"]
+        == "My name is Avinash."
+    )
+
+    assert (
+        messages[1]["role"]
+        == "assistant"
+    )
 
     print(messages)
 
@@ -32,7 +45,9 @@ def main():
 
     assert memory.get(session_id) == []
 
-    print("Memory Store Test Passed")
+    print(
+        "\nPersistent Memory Store Test Passed"
+    )
 
 
 if __name__ == "__main__":

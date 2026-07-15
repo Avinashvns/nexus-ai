@@ -25,3 +25,5 @@ orjson
 ddgs
 
 python-multipart
+
+sqlalchemy

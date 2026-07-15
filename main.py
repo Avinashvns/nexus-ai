@@ -6,6 +6,8 @@ from api.routes.documents import (
     router as documents_router,
 )
 
+from database.init_db import init_database
+
 settings= get_settings()
 
 app=FastAPI(
@@ -16,6 +18,10 @@ app=FastAPI(
 app.include_router(chat_router)
 
 app.include_router(documents_router)
+
+@app.on_event("startup")
+def startup_event():
+    init_database()
 
 @app.get("/")
 async def root():

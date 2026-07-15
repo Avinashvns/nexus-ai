@@ -25,7 +25,9 @@ class Settings(BaseSettings):
     port: int = Field(..., alias="PORT")
 
     ollama_host: str = Field(..., alias="OLLAMA_HOST")
-    default_model: str = Field(..., alias="DEFAULT_MODEL")
+    default_model: str = Field(..., alias="DEFAULT_MODEL")    
+    
+    database_url: str = "sqlite:///./nexus_ai.db"
 
     log_level: str = Field(..., alias="LOG_LEVEL")
 
