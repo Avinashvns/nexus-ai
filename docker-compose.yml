@@ -1,0 +1,27 @@
+services:
+  nexus-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nexus-ai
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    environment:
+      OLLAMA_HOST: http://host.docker.internal:11434
+      DATABASE_URL: sqlite:////app/data/nexus_ai.db
+
+    volumes:
+      - nexus_data:/app/data
+      - nexus_logs:/app/logs
+
+    restart: unless-stopped
+
+volumes:
+  nexus_data:
+  nexus_logs:
