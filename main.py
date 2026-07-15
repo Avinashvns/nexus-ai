@@ -10,12 +10,31 @@ from api.routes.workflows import (
 )
 from database.init_db import init_database
 
+from configs.settings import get_settings
+from core.config_validation import (
+    validate_configuration,
+)
+
+from api.exception_handlers import (
+    register_exception_handlers,
+)
+
+from api.middleware import (
+    SecurityHeadersMiddleware,
+)
+
 settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
 )
+
+app.add_middleware(
+    SecurityHeadersMiddleware
+)
+
+register_exception_handlers(app)
 
 app.include_router(chat_router)
 
@@ -26,6 +45,10 @@ app.include_router(workflows_router)
 
 @app.on_event("startup")
 def startup_event():
+    settings = get_settings()
+
+    validate_configuration(settings)
+
     init_database()
 
 

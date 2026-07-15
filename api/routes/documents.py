@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from uuid import uuid4
 
@@ -10,6 +9,10 @@ from fastapi import (
     status,
 )
 
+from core.constants import (
+    ALLOWED_PDF_CONTENT_TYPES,
+    MAX_UPLOAD_SIZE_BYTES,
+)
 from core.logger import app_logger
 from rag.pipeline import rag_pipeline
 
@@ -28,12 +31,47 @@ UPLOAD_DIR.mkdir(
 
 
 @router.post("/upload")
-def upload_document(
+async def upload_document(
     file: UploadFile = File(...),
 ) -> dict:
     file_path: Path | None = None
 
     try:
+        if (
+            file.content_type
+            not in ALLOWED_PDF_CONTENT_TYPES
+        ):
+            raise HTTPException(
+                status_code=(
+                    status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+                ),
+                detail="Only PDF files are supported",
+            )
+
+        content = await file.read()
+
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded file is empty",
+            )
+
+        if len(content) > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(
+                status_code=(
+                    status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                ),
+                detail=(
+                    "Uploaded file exceeds 10 MB limit"
+                ),
+            )
+
+        if not content.startswith(b"%PDF"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid PDF file",
+            )
+
         if not file.filename:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -48,15 +86,9 @@ def upload_document(
 
         file_id = str(uuid4())
 
-        file_path = UPLOAD_DIR / (
-            f"{file_id}.pdf"
-        )
+        file_path = UPLOAD_DIR / f"{file_id}.pdf"
 
-        with file_path.open("wb") as buffer:
-            shutil.copyfileobj(
-                file.file,
-                buffer,
-            )
+        file_path.write_bytes(content)
 
         chunk_count = rag_pipeline.ingest_pdf(
             str(file_path)
@@ -82,7 +114,9 @@ def upload_document(
         )
 
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=(
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+            ),
             detail="Document ingestion failed",
         ) from error
 

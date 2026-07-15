@@ -1,17 +1,43 @@
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from core.constants import (
+    MAX_SESSION_ID_LENGTH,
+    MAX_TASK_LENGTH,
+)
 
 
 class ChatRequest(BaseModel):
-    message: str = Field(
+    task: str = Field(
+        ...,
         min_length=1,
+        max_length=MAX_TASK_LENGTH,
     )
 
     session_id: str = Field(
-        default="default",
+        ...,
         min_length=1,
+        max_length=MAX_SESSION_ID_LENGTH,
     )
+
+    @field_validator(
+        "task",
+        "session_id",
+    )
+    @classmethod
+    def validate_non_empty_text(
+        cls,
+        value: str,
+    ) -> str:
+        value = value.strip()
+
+        if not value:
+            raise ValueError(
+                "Value cannot be empty"
+            )
+
+        return value
 
 
 class ChatResponse(BaseModel):
