@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 
 from main import app
@@ -9,7 +11,7 @@ client = TestClient(
 )
 
 
-def main():
+def main() -> None:
     print(
         "Starting Production Hardening Test"
     )
@@ -46,10 +48,44 @@ def main():
         == "no-store"
     )
 
+    username = f"hardening-{uuid4()}"
+    password = "SecurePassword123!"
+
+    register_response = client.post(
+        "/auth/register",
+        json={
+            "username": username,
+            "password": password,
+        },
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "username": username,
+            "password": password,
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()[
+        "access_token"
+    ]
+
+    auth_headers = {
+        "Authorization": (
+            f"Bearer {access_token}"
+        ),
+    }
+
     invalid_chat_response = client.post(
         "/chat",
+        headers=auth_headers,
         json={
-            "task": "   ",
+            "message": "   ",
             "session_id": "test-session",
         },
     )
@@ -99,7 +135,8 @@ def main():
     )
 
     missing_workflow_response = client.get(
-        "/workflows/non-existent-workflow"
+        "/workflows/non-existent-workflow",
+        headers=auth_headers,
     )
 
     assert (

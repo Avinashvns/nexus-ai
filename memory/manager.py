@@ -1,3 +1,4 @@
+import orjson
 from typing import Any
 
 from memory.store import memory_store
@@ -20,13 +21,20 @@ class MemoryManager:
     def add_assistant_message(
         self,
         session_id: str,
-        content: str,
+        content: Any,
         user_id: int | None = None,
     ) -> None:
+        if isinstance(content, str):
+            serialized_content = content
+        else:
+            serialized_content = orjson.dumps(
+                content
+            ).decode("utf-8")
+
         memory_store.add(
             session_id=session_id,
             role="assistant",
-            content=content,
+            content=serialized_content,
             user_id=user_id,
         )
 
@@ -44,8 +52,12 @@ class MemoryManager:
         self,
         session_id: str,
         limit: int = 10,
+        user_id: int | None = None,
     ) -> str:
-        messages = self.get_messages(session_id)
+        messages = self.get_messages(
+            session_id=session_id,
+            user_id=user_id,
+        )
 
         recent_messages = messages[-limit:]
 

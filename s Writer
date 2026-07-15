@@ -1,0 +1,14 @@
+[35magents/planner.py[m[36m:[m[32m17[m[36m:[m        "[1;31mWriterAgent[m",
+[35magents/planner.py[m[36m:[m[32m70[m[36m:[m            - [1;31mWriterAgent[m
+[35magents/writer.py[m[36m:[m[32m8[m[36m:[mclass [1;31mWriterAgent[m(BaseAgent):
+[35magents/writer.py[m[36m:[m[32m10[m[36m:[m        super().__init__(name="[1;31mWriterAgent[m")
+[35magents/writer.py[m[36m:[m[32m77[m[36m:[mwriter_agent = [1;31mWriterAgent[m()
+[35mprompts/planner.txt[m[36m:[m[32m9[m[36m:[m- [1;31mWriterAgent[m
+[35mprompts/planner.txt[m[36m:[m[32m17[m[36m:[m4. [1;31mWriterAgent[m
+[35mprompts/planner.txt[m[36m:[m[32m24[m[36m:[m4. [1;31mWriterAgent[m
+[35mprompts/planner.txt[m[36m:[m[32m37[m[36m:[m3. [1;31mWriterAgent[m
+[35mprompts/planner.txt[m[36m:[m[32m39[m[36m:[mNever place [1;31mWriterAgent[m before CriticAgent.
+[35mtests/integration/test_agents_flow.py[m[36m:[m[32m49[m[36m:[m        agent_name="[1;31mWriterAgent[m",
+[35mtests/integration/test_search_workflow.py[m[36m:[m[32m30[m[36m:[m        "[1;31mWriterAgent[m",
+[35mworkflow/engine.py[m[36m:[m[32m193[m[36m:[m            "[1;31mWriterAgent[m": 5,
+[35mworkflow/engine.py[m[36m:[m[32m240[m[36m:[m            "[1;31mWriterAgent[m": "final_output",
