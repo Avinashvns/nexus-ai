@@ -5,12 +5,14 @@ from api.routes.chat import router as chat_router
 from api.routes.documents import (
     router as documents_router,
 )
-
+from api.routes.workflows import (
+    router as workflows_router,
+)
 from database.init_db import init_database
 
-settings= get_settings()
+settings = get_settings()
 
-app=FastAPI(
+app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
 )
@@ -19,19 +21,19 @@ app.include_router(chat_router)
 
 app.include_router(documents_router)
 
+app.include_router(workflows_router)
+
+
 @app.on_event("startup")
 def startup_event():
     init_database()
 
+
 @app.get("/")
 async def root():
-    return {
-        "message" : f"Welcome to {settings.app_name}"
-    }
+    return {"message": f"Welcome to {settings.app_name}"}
 
 
 @app.get("/health")
 async def health():
-    return {
-        "status" : "healthy"
-    }
+    return {"status": "healthy"}

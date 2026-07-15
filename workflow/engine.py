@@ -7,6 +7,7 @@ from core.logger import app_logger
 from models import AgentRequest, AgentResponse, AgentState
 from observability.metrics import ExecutionMetrics
 from observability.tracing import generate_workflow_id
+from database.repositories import workflow_repository
 
 
 class WorkflowEngine:
@@ -15,10 +16,18 @@ class WorkflowEngine:
 
     def run(self, task: str, session_id: str = "default") -> AgentResponse:
         workflow_id = generate_workflow_id()
-        app_logger.info(f"Starting workflow: {task}")
+
+        workflow_repository.create(
+            workflow_id=workflow_id,
+            session_id=session_id,
+            task=task,
+        )
+        app_logger.info(f"[{workflow_id}] Starting workflow: {task}")
 
         metrics = ExecutionMetrics()
         metrics.start_workflow()
+
+       
 
         memory_context = memory_manager.build_context(
             session_id=session_id,
@@ -47,7 +56,14 @@ class WorkflowEngine:
             )
         )
 
+        workflow_metrics = metrics.finish_workflow(success=False)
+
         if not plan_response.success:
+            workflow_repository.mark_failed(
+                workflow_id=workflow_id,
+                metrics=workflow_metrics,
+                execution_history=execution_history,
+            )
             return AgentResponse(
                 success=False,
                 output=None,
@@ -99,6 +115,12 @@ class WorkflowEngine:
 
                 workflow_metrics = metrics.finish_workflow(success=False)
 
+                workflow_repository.mark_failed(
+                    workflow_id=workflow_id,
+                    metrics=workflow_metrics,
+                    execution_history=execution_history,
+                )
+
                 return AgentResponse(
                     success=False,
                     output=None,
@@ -124,6 +146,12 @@ class WorkflowEngine:
         state.completed = True
 
         workflow_metrics = metrics.finish_workflow(success=True)
+
+        workflow_repository.mark_completed(
+            workflow_id=workflow_id,
+            metrics=workflow_metrics,
+            execution_history=execution_history,
+        )
 
         final_output = state.context.get(
             "final_output",
