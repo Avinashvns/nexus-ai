@@ -38,3 +38,9 @@ class ConversationMessage(Base):
         ),
         nullable=False,
     )
+
+    user_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        index=True,
+    )

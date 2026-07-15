@@ -14,13 +14,14 @@ class WorkflowEngine:
     def __init__(self, max_retries: int = 2):
         self.max_retries = max_retries
 
-    def run(self, task: str, session_id: str = "default") -> AgentResponse:
+    def run(self, task: str, session_id: str = "default",user_id: int | None = None,) -> AgentResponse:
         workflow_id = generate_workflow_id()
 
         workflow_repository.create(
             workflow_id=workflow_id,
             session_id=session_id,
             task=task,
+            user_id=user_id,
         )
         app_logger.info(f"[{workflow_id}] Starting workflow: {task}")
 
@@ -31,11 +32,13 @@ class WorkflowEngine:
 
         memory_context = memory_manager.build_context(
             session_id=session_id,
+            user_id=user_id,
         )
 
         memory_manager.add_user_message(
             session_id=session_id,
             content=task,
+            user_id=user_id,
         )
 
         state = AgentState(
@@ -161,6 +164,7 @@ class WorkflowEngine:
         memory_manager.add_assistant_message(
             session_id=session_id,
             content=final_output,
+            user_id=user_id,
         )
 
         app_logger.success(f"[{workflow_id}] Workflow completed successfully")

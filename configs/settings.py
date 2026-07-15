@@ -65,12 +65,29 @@ class Settings(BaseSettings):
         alias="LOG_LEVEL",
     )
 
+    jwt_secret_key: str = Field(
+        ...,
+        alias="JWT_SECRET_KEY",
+    )
+
+    jwt_algorithm: str = Field(
+        default="HS256",
+        alias="JWT_ALGORITHM",
+    )
+
+    access_token_expire_minutes: int = Field(
+        default=30,
+        alias="ACCESS_TOKEN_EXPIRE_MINUTES",
+    )
+
     @field_validator(
         "app_name",
         "app_version",
         "host",
         "default_model",
+        "jwt_secret_key",
         "log_level",
+        
     )
     @classmethod
     def validate_non_empty(

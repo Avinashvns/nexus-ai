@@ -22,6 +22,9 @@ from api.exception_handlers import (
 from api.middleware import (
     SecurityHeadersMiddleware,
 )
+from api.routes.auth import router as auth_router
+
+
 
 settings = get_settings()
 
@@ -41,6 +44,8 @@ app.include_router(chat_router)
 app.include_router(documents_router)
 
 app.include_router(workflows_router)
+
+app.include_router(auth_router)
 
 
 @app.on_event("startup")

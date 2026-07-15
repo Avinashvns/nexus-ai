@@ -1,9 +1,12 @@
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     status,
 )
 
+from auth.dependencies import get_current_user
+from database.models.user import User
 from database.repositories import (
     workflow_repository,
 )
@@ -18,9 +21,13 @@ router = APIRouter(
 @router.get("/{workflow_id}")
 def get_workflow(
     workflow_id: str,
+    current_user: User = Depends(
+        get_current_user
+    ),
 ) -> dict:
     workflow = workflow_repository.get(
-        workflow_id
+        workflow_id=workflow_id,
+        user_id=current_user.id,
     )
 
     if workflow is None:

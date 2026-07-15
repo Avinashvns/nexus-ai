@@ -13,11 +13,13 @@ class WorkflowRepository:
         workflow_id: str,
         session_id: str,
         task: str,
+        user_id: int | None = None,
     ) -> WorkflowRun:
         database = SessionLocal()
 
         try:
             workflow = WorkflowRun(
+                user_id=user_id,
                 workflow_id=workflow_id,
                 session_id=session_id,
                 task=task,
@@ -42,15 +44,26 @@ class WorkflowRepository:
     def get(
         self,
         workflow_id: str,
+        user_id: int | None = None,
     ) -> WorkflowRun | None:
         database = SessionLocal()
 
         try:
-            workflow = database.scalar(
-                select(WorkflowRun).where(
-                    WorkflowRun.workflow_id
-                    == workflow_id
+            statement = select(
+                WorkflowRun
+            ).where(
+                WorkflowRun.workflow_id
+                == workflow_id
+            )
+
+            if user_id is not None:
+                statement = statement.where(
+                    WorkflowRun.user_id
+                    == user_id
                 )
+
+            workflow = database.scalar(
+                statement
             )
 
             if workflow is not None:

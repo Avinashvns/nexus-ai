@@ -27,3 +27,6 @@ ddgs
 python-multipart
 
 sqlalchemy
+
+PyJWT
+pwdlib[argon2]
